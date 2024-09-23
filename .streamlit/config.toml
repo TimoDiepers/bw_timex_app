@@ -1,0 +1,9 @@
+[client]
+showSidebarNavigation = false
+
+[theme]
+base="dark"
+primaryColor="#9c5ffd"
+
+[ui]
+hideTopBar = true
