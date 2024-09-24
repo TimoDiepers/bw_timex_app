@@ -66,7 +66,7 @@ include-package-data = true
 packages = ["bw_timex_app"]
 
 [tool.setuptools.package-data]
-"bw_timex_app" = ["pages/*"]
+"bw_timex_app" = ["pages/*", ".streamlit/*"]
 
 [tool.setuptools.dynamic]
 version = {attr = "bw_timex_app.__version__"}
