@@ -24,6 +24,8 @@ requirements:
     - bw_timex >=0.2.4
     - streamlit >=1.34.0
     - plotly
+  entry_points:
+    - bw_timex_app = bw_timex_app.cli:main
 
 source:
   path: ..
