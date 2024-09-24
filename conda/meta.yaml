@@ -2,7 +2,7 @@
 
 package:
   name: "bw_timex_app"
-  version: "0.1.2"
+  version: "0.1.3"
 
 about:
   summary: "Streamlit app for bw_timex"

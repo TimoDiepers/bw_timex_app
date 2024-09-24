@@ -5,4 +5,4 @@ __all__ = (
     # Add functions and variables you want exposed in `bw_timex_app.` namespace here
 )
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
