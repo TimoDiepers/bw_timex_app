@@ -9,7 +9,6 @@
 
 
 To install the `bw_timex_app`, just install the package in a new Conda environment (in this example named `timex_app`).
-
 Depending on your operating system, you need to install a slightly different version:
 
 ### Linux, Windows, or MacOS (x64)
@@ -34,7 +33,7 @@ To run the `bw_timex_app`, just do the following:
 conda activate timex_app
 ```
 
-2. Run the app in your browser:
+2. Run the app:
 
 ```console
 bw-timex-app
