@@ -1,0 +1,42 @@
+# conda build --output-folder ./conda-out/ ./conda/ -c conda-forge -c cmutel -c diepers
+
+package:
+  name: "bw_timex_app"
+  version: "0.1.0"
+
+about:
+  summary: "Streamlit app for bw_timex"
+  home: "https://github.com/TimoDiepers/bw_timex_app"
+  license: "BSD-3-Clause"
+  license_family: "BSD"
+  license_file: "LICENSE"
+  license_url: "https://github.com/TimoDiepers/bw_timex_app/blob/main/LICENSE"
+  doc_url: "https://docs.brightway.dev/projects/bw-timex"
+
+requirements:
+  build:
+    - python={{ python_version }}
+    - setuptools
+    - wheel
+    - pip
+  run:
+    - python={{ python_version }}
+    - bw_timex >= 0.2.4
+    - streamlit
+    - 
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script:
+    - rm -rf $SRC_DIR/docs
+    - rm -rf $SRC_DIR/dev
+    - {{ PYTHON }} -m pip install . --no-deps -vv
+  string: py{{ python_version | replace('.', '') }}
+  exclude_files:
+    - docs/*
+    - dev/*
+    - notebooks/*
+    - archive/*
