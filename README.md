@@ -1,30 +1,43 @@
 # bw_timex_app
 
-[![PyPI](https://img.shields.io/pypi/v/bw_timex_app.svg)][pypi status]
-[![Status](https://img.shields.io/pypi/status/bw_timex_app.svg)][pypi status]
-[![Python Version](https://img.shields.io/pypi/pyversions/bw_timex_app)][pypi status]
-[![License](https://img.shields.io/pypi/l/bw_timex_app)][license]
-
-[![Read the documentation at https://bw_timex_app.readthedocs.io/](https://img.shields.io/readthedocs/bw_timex_app/latest.svg?label=Read%20the%20Docs)][read the docs]
-[![Tests](https://github.com/TimoDiepers/bw_timex_app/actions/workflows/python-test.yml/badge.svg)][tests]
-[![Codecov](https://codecov.io/gh/TimoDiepers/bw_timex_app/branch/main/graph/badge.svg)][codecov]
-
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
-[![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
-
-[pypi status]: https://pypi.org/project/bw_timex_app/
-[read the docs]: https://bw_timex_app.readthedocs.io/
-[tests]: https://github.com/TimoDiepers/bw_timex_app/actions?workflow=Tests
-[codecov]: https://app.codecov.io/gh/TimoDiepers/bw_timex_app
-[pre-commit]: https://github.com/pre-commit/pre-commit
-[black]: https://github.com/psf/black
+<!-- [![Read the Docs](https://img.shields.io/readthedocs/timex?label=documentation)]([https://docs.brightway.dev/projects/bw-timex/en/latest/](https://bw-timex-app.readthedocs.io/en/latest/)) -->
+[![PyPI - Version](https://img.shields.io/pypi/v/bw-timex-app?color=%2300549f)](https://pypi.org/project/bw-timex-app/)
+[![Conda Version](https://img.shields.io/conda/v/diepers/bw_timex_app?label=conda)](https://anaconda.org/diepers/bw_timex_app)
+![Conda - License](https://img.shields.io/conda/l/diepers/bw_timex_app)
 
 ## Installation
 
-You can install _bw_timex_app_ via [pip] from [PyPI]:
+
+To install the `bw_timex_app`, just install the package in a new Conda environment (in this example named `timex_app`).
+
+Depending on your operating system, you need to install a slightly different version:
+
+### Linux, Windows, or MacOS (x64)
 
 ```console
-$ pip install bw_timex_app
+conda create -n timex_app -c conda-forge -c cmutel -c diepers brightway25 bw_timex_app
+```
+
+### macOS (Apple Silicon/ARM)
+
+```console
+conda create -n timex_app -c conda-forge -c cmutel -c diepers brightway25 bw_timex_app
+```
+
+## Running the App
+
+To run the `bw_timex_app`, just do the following:
+
+1. Activate the environment:
+
+```console
+conda activate timex_app
+```
+
+2. Run the app in your browser:
+
+```console
+bw-timex-app
 ```
 
 ## Contributing

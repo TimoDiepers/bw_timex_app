@@ -29,6 +29,9 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "bw_timex>=0.2.4",
+    "streamlit",
+    "plotly",
     # dependencies as strings with quotes, e.g. "foo"
     # You can add version requirements like "foo>2.0"
 ]
