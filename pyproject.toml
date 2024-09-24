@@ -80,8 +80,8 @@ norecursedirs = [
 ]
 testpaths = ["tests/*.py"]
 
-[project.entry-points."console_scripts"]
-bw-timex-app = "bw_timex_app.cli:main"
+[project.scripts]
+bw-timex = "bw_timex_app.cli:main"
 
 [tool.flake8]
 # Some sane defaults for the code style checker flake8
