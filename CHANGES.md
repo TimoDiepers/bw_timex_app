@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2024-09-24
+* Added entry point to conda dist
+* Fixed .streamlit folder not included in package data
+
 ## [0.1.1] - 2024-09-24
 * Added entry point to run the app via `bw-timex-app` from a conda environment
 * Fixed missing dependencies
