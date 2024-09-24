@@ -2,7 +2,7 @@
 
 package:
   name: "bw_timex_app"
-  version: "0.1.0"
+  version: "0.1.1"
 
 about:
   summary: "Streamlit app for bw_timex"
@@ -21,9 +21,9 @@ requirements:
     - pip
   run:
     - python={{ python_version }}
-    - bw_timex >= 0.2.4
+    - bw_timex >=0.2.4
     - streamlit
-    - 
+    - plotly
 
 source:
   path: ..
