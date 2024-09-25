@@ -22,7 +22,7 @@ requirements:
   run:
     - python={{ python_version }}
     - bw_timex >=0.2.4
-    - streamlit >=1.34.0
+    - streamlit >=1.38.0
     - plotly
   entry_points:
     - bw-timex = bw_timex_app.cli:main
@@ -42,3 +42,8 @@ build:
     - dev/*
     - notebooks/*
     - archive/*
+
+files:
+  include:
+    - bw_timex_app/**
+    - ../.streamlit/**
