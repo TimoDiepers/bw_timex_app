@@ -119,4 +119,9 @@ with st.container(border=True):
         st.write(f"- {db}")
     if st.button("Calculate", use_container_width=True, type="primary", disabled=st.session_state.tlca_demand_activity is None):
         st.write("Calculating...")
-            
+
+with st.sidebar:
+    if st.button("Calculate TimexLCAs", use_container_width=True, type="primary"):
+        st.switch_page("pages/mode.py")
+    if st.button("Select a different Project", use_container_width=True):
+        st.switch_page("project_selection.py")
