@@ -1,23 +1,19 @@
 import streamlit as st
 import bw2data as bd
 
-st.set_page_config(page_title="bw_timex_app", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="bw_timex_app", layout="centered", initial_sidebar_state="collapsed")
 
-_, col_project_selection, _ = st.columns(3)
-with col_project_selection:
-    # Project Selection Section
-    st.header("📂 Choose a Project")
+if 'current_project' not in st.session_state:
+    st.session_state.current_project = None
 
-    with st.form(key='project_selection_form'):
-        project_names = [project.name for project in bd.projects]
-        selected_project = st.selectbox("Choose a Project", options=project_names)
-        submit_project = st.form_submit_button("Set Project")
+_, col, _ = st.columns([1, 2, 1])
+with col:
+    st.title("Select a Project")
+    st.text("")
+    project_names = [project.name for project in bd.projects]
+    selected_project = st.selectbox("Your Available Projects", options=project_names)
 
-        if submit_project:
-            if not selected_project:
-                st.warning("Please select a project.")
-            else:
-                bd.projects.set_current(selected_project)
-                st.session_state.current_project = selected_project
-                with st.spinner("Loading..."):
-                    st.switch_page("pages/mode.py")
+    if st.button("Activate", use_container_width=True, type="primary"):
+        bd.projects.set_current(selected_project)
+        st.session_state.current_project = selected_project
+        st.switch_page("pages/mode.py")
