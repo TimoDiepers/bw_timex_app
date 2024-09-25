@@ -3,6 +3,7 @@ import streamlit as st
 import bw2data as bd
 from bw2data.backends import ActivityDataset as AD
 from bw2data.subclass_mapping import NODE_PROCESS_CLASS_MAPPING
+from bw_timex import TimexLCA
 
 st.set_page_config(page_title="bw_timex_app", layout="centered", initial_sidebar_state='collapsed')
 
@@ -95,6 +96,7 @@ if "tlca_demand_activity" not in st.session_state:
     st.session_state.tlca_demand_activity = None
 
 with st.container(border=True):
+    st.subheader("Calculation Setup")
     col_activity, col_change = st.columns([3, 1], vertical_alignment="center")
     
     with col_activity:
@@ -112,6 +114,9 @@ with st.container(border=True):
     with col_method:
         selected_method = st.selectbox("Method", options=getattr(bd, 'methods', []))
 
-    if st.button("Calculate", use_container_width=True, type="primary"):
+    selected_dbs = st.multiselect("Databases to use", options=list(bd.databases))
+    for db in selected_dbs:
+        st.write(f"- {db}")
+    if st.button("Calculate", use_container_width=True, type="primary", disabled=st.session_state.tlca_demand_activity is None):
         st.write("Calculating...")
             
