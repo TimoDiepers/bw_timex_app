@@ -2,3 +2,4 @@ bw_timex>=0.2.4
 streamlit>=1.38.0
 plotly
 bw2io>=0.8.0
+bw2data>=4.0.dev56 
