@@ -8,15 +8,17 @@ name: Python 🐍 CI/CD tests
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, dev]
     paths-ignore: # prevents workflow execution when only these types of files are modified
       - "**.md" # wildcards prevent file in any repo dir from trigering workflow
       - "**.bib"
       - "**.ya?ml" # captures both .yml and .yaml
       - "LICENSE"
       - ".gitignore"
+      - "**.ipynb" # ignore Jupyter notebooks
+
   pull_request:
-    branches: [main, develop]
+    branches: [main, dev]
     types: [opened, reopened] # excludes syncronize to avoid redundant trigger from commits on PRs
     paths-ignore:
       - "**.md"
@@ -24,6 +26,7 @@ on:
       - "**.ya?ml"
       - "LICENSE"
       - ".gitignore"
+      - "**.ipynb" # ignore Jupyter notebooks
   workflow_dispatch: # also allow manual trigger, for testing purposes
 
 jobs:
@@ -32,31 +35,41 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-13, ubuntu-20.04, macos-latest, windows-2019]
-        py-version: ["3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest] # , windows-latest, macos-latest
+        py-version: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4
 
-      # general Python setup
-      - name: Set up Python ${{ matrix.py-version }}
-        uses: actions/setup-python@v5
+      # Set up Miniconda
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
         with:
           python-version: ${{ matrix.py-version }}
+          miniconda-version: "latest"  # Ensure Miniconda is installed
 
-      - name: Update pip & install testing pkgs
+      # Create the conda environment
+      - name: Create conda environment
+        run: conda create -n timex -c conda-forge -c cmutel -c diepers brightway25 bw_timex streamlit
+
+      # Install testing dependencies from pyproject.toml
+      - name: Install testing dependencies
         run: |
-          python -VV
-          python -m pip install --upgrade pip setuptools wheel
+          source $(conda info --base)/etc/profile.d/conda.sh
+          conda activate timex
+          pip install .[testing]
 
-      # install testing
-      - name: Install package and test deps
+      # Verify the environment
+      - name: Check conda environment
         run: |
-          pip install .[testing] # install the package and the testing deps
+          source $(conda info --base)/etc/profile.d/conda.sh
+          conda activate timex
+          conda info
+          conda list
 
+      # Test with pytest
       - name: Test with pytest
         run: |
+          source $(conda info --base)/etc/profile.d/conda.sh
+          conda activate timex
           pytest
-
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
