@@ -1,5 +1,6 @@
 import streamlit as st
 import bw2data as bd
+import bw2io as bi
 
 st.set_page_config(page_title="bw_timex_app", layout="centered", initial_sidebar_state="collapsed")
 
@@ -16,4 +17,8 @@ with col:
     if st.button("Activate", use_container_width=True, type="primary"):
         bd.projects.set_current(selected_project)
         st.session_state.current_project = selected_project
+        
+        if "Mobility example" not in bd.databases:
+            bi.add_example_database()
+            
         st.switch_page("pages/mode.py")
