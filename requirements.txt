@@ -1,0 +1,3 @@
+bw_timex>=0.2.4
+streamlit>=1.38.0
+plotly
