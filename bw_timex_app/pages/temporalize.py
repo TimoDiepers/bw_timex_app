@@ -109,7 +109,8 @@ def add_temporal_information(selected_exchange):
                 start = st.number_input("Start", value=0)
             with col_end:
                 end = st.number_input("End", value=10)
-            steps = st.slider("Steps", min_value=3, max_value=end + 1, value=end + 1)
+            min_steps = 1
+            steps = st.slider("Steps", min_value=min_steps, max_value=abs(end) + 1, value=abs(end) + 1)
 
         if distribution_type == "uniform":
             td = easy_timedelta_distribution(
@@ -119,6 +120,7 @@ def add_temporal_information(selected_exchange):
                 steps=steps,
                 kind="uniform",
             )
+            min_steps = 3
 
         if distribution_type == "triangular":
             param = st.slider("Mode", min_value=0.001, max_value=float(end), value=1.0)
@@ -131,6 +133,7 @@ def add_temporal_information(selected_exchange):
                 kind=distribution_type,
                 param=param,
             )
+            min_steps = 3
 
         if distribution_type == "normal":
             param = st.slider(
