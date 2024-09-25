@@ -20,7 +20,7 @@ conda create -n timex_app -c conda-forge -c cmutel -c diepers brightway25 bw_tim
 ### macOS (Apple Silicon/ARM)
 
 ```console
-conda create -n timex_app -c conda-forge -c cmutel -c diepers brightway25_nosolver scikit-umfpack bw_timex_app
+conda create -n timex_app -c conda-forge -c cmutel -c diepers brightway25_nosolver scikit-umfpack numpy==1.24 matplotlib==3.5.2 bw_timex_app
 ```
 
 ## Running the App
