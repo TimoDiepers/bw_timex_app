@@ -13,3 +13,9 @@ with col:
         st.switch_page("pages/calculate.py")
     if st.button("Temporalize Data", use_container_width=True):
         st.switch_page("pages/temporalize.py")
+
+with st.sidebar:
+    if st.button("Calculate TimexLCAs", use_container_width=True, type="primary"):
+        st.switch_page("pages/mode.py")
+    if st.button("Select a different Project", use_container_width=True):
+        st.switch_page("project_selection.py")

@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import bw2data as bd
+from datetime import datetime
 from bw2data.backends import ActivityDataset as AD
 from bw2data.subclass_mapping import NODE_PROCESS_CLASS_MAPPING
 from bw_timex import TimexLCA
@@ -87,6 +88,75 @@ def select_demand_activity():
         st.session_state.tlca_demand_activity = demand_choice
         st.rerun()
         
+@st.fragment
+def show_results():
+    tlca = st.session_state.tlca
+    st.write("Static score: ", tlca.static_score)
+
+    from dynamic_characterization.ipcc_ar6 import characterize_co2
+    emission_id = bd.get_node(code="CO2").id
+
+    characterization_function_dict = {
+        emission_id: characterize_co2,
+    }
+
+    def plot_characterized_inventory(tlca):
+        from bw_timex.utils import resolve_temporalized_node_name
+        # Prepare the plot data
+        metric_ylabels = {
+            "radiative_forcing": "radiative forcing [W/m²]",
+            "GWP": f"GWP{tlca.current_time_horizon} [kg CO₂-eq]",
+        }
+
+        plot_data = tlca.characterized_inventory.copy()
+
+        # Sum emissions within activities
+        plot_data = plot_data.groupby(["date", "activity"]).sum().reset_index()
+        plot_data["amount_sum"] = plot_data["amount"].cumsum()
+
+        # Create a mapping for activity names
+        activity_name_cache = {}
+        for activity in plot_data["activity"].unique():
+            if activity not in activity_name_cache:
+                activity_name_cache[activity] = resolve_temporalized_node_name(
+                    tlca.activity_time_mapping_dict_reversed[activity][0][1]
+                )
+        plot_data["activity_label"] = plot_data["activity"].map(activity_name_cache)
+
+        # Create a wide-form DataFrame suitable for st.scatter_chart
+        # We'll pivot the table so each activity is a separate column
+        plot_data_wide = plot_data.pivot(index="date", columns="activity_label", values="amount")
+
+        # Plot using Streamlit's st.scatter_chart
+        st.scatter_chart(plot_data_wide, x_label="time", y_label=metric_ylabels[tlca.current_metric], size=40)
+
+    col_th_rf, col_th_rf_f = st.columns([4, 1])
+    with col_th_rf:
+        time_horizon_rf = st.slider("Time Horizon for Radiative Forcing", min_value=2, max_value=1000, value=100, step=1)
+    with col_th_rf_f:
+        fixed_th_rf = st.checkbox("Fixed", value=False, key="fixed_checkbox_rf")
+    tlca.dynamic_lcia(
+        metric="radiative_forcing",
+        time_horizon=time_horizon_rf,
+        fixed_time_horizon=fixed_th_rf,
+        characterization_function_dict=characterization_function_dict,
+    )
+    plot_characterized_inventory(tlca)
+    
+    col_th_gwp, col_th_gwp_f = st.columns([4, 1])
+    with col_th_gwp:
+        time_horizon_gwp = st.slider("Time Horizon for GWP", min_value=2, max_value=1000, value=100, step=1)
+    with col_th_gwp_f:
+        fixed_th_gwp = st.checkbox("Fixed", value=False, key="fixed_checkbox_gwp")
+    tlca.dynamic_lcia(
+        metric="GWP",
+        time_horizon=time_horizon_gwp,
+        fixed_time_horizon=fixed_th_gwp,
+        characterization_function_dict=characterization_function_dict,
+    )
+
+    plot_characterized_inventory(tlca)
+        
 st.title("Calculate TimexLCAs")
         
 if "tlca_demand_candidates" not in st.session_state:
@@ -139,11 +209,15 @@ with st.container(border=True):
     
     # for db in selected_dbs:
     #     st.date_input(f"Representative Date for '{db}'", key=f"start_date_{db}")
-            
+    calculated = False
     if st.button("Calculate", use_container_width=True, type="primary", disabled=st.session_state.tlca_demand_activity is None):
         from bw_timex import TimexLCA
-        database_date_dict = dict(zip(editor['Database'], editor['Representative Date']))
-        
+        def custom_convert_to_datetime(x):
+            if x == 'dynamic':
+                return x
+            else:
+                return datetime.strptime(x, "%Y-%m-%d")
+        database_date_dict = dict(zip(editor['Database'], editor['Representative Date'].apply(custom_convert_to_datetime)))
         tlca = TimexLCA(
             demand={st.session_state.tlca_demand_activity: amount},
             method=selected_method,
@@ -151,65 +225,15 @@ with st.container(border=True):
         )
 
         timeline = tlca.build_timeline()
-
         st.dataframe(timeline)
 
         tlca.lci()
         tlca.static_lcia()
-        st.write("Static score: ", tlca.static_score)
-
-        from dynamic_characterization.ipcc_ar6 import characterize_co2
-        emission_id = bd.get_node(code="CO2").id
-
-        characterization_function_dict = {
-            emission_id: characterize_co2,
-        }
-
-        def plot_characterized_inventory(tlca):
-            from bw_timex.utils import resolve_temporalized_node_name
-            # Prepare the plot data
-            metric_ylabels = {
-                "radiative_forcing": "radiative forcing [W/m²]",
-                "GWP": f"GWP{tlca.current_time_horizon} [kg CO₂-eq]",
-            }
-
-            plot_data = tlca.characterized_inventory.copy()
-
-            # Sum emissions within activities
-            plot_data = plot_data.groupby(["date", "activity"]).sum().reset_index()
-            plot_data["amount_sum"] = plot_data["amount"].cumsum()
-
-            # Create a mapping for activity names
-            activity_name_cache = {}
-            for activity in plot_data["activity"].unique():
-                if activity not in activity_name_cache:
-                    activity_name_cache[activity] = resolve_temporalized_node_name(
-                        tlca.activity_time_mapping_dict_reversed[activity][0][1]
-                    )
-            plot_data["activity_label"] = plot_data["activity"].map(activity_name_cache)
-
-            # Create a wide-form DataFrame suitable for st.scatter_chart
-            # We'll pivot the table so each activity is a separate column
-            plot_data_wide = plot_data.pivot(index="date", columns="activity_label", values="amount")
-
-            # Plot using Streamlit's st.scatter_chart
-            st.scatter_chart(plot_data_wide, x_label="time", y_label=metric_ylabels[tlca.current_metric], size=40)
-
-        tlca.dynamic_lcia(
-            metric="radiative_forcing",
-            time_horizon=100,
-            characterization_function_dict=characterization_function_dict,
-        )
-
-        plot_characterized_inventory(tlca)
-
-        tlca.dynamic_lcia(
-            metric="GWP",
-            time_horizon=100,
-            characterization_function_dict=characterization_function_dict,
-        )
-
-        plot_characterized_inventory(tlca)        
+        st.session_state.tlca = tlca
+        calculated = True
+        
+if calculated:
+    show_results()        
         
 with st.sidebar:
     if st.button("Calculate TimexLCAs", use_container_width=True, type="primary"):

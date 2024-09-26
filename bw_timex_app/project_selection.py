@@ -11,6 +11,8 @@ if 'current_project' not in st.session_state:
     st.session_state.current_project = None
 
 def add_timex_getting_started_project():
+    if "timex_getting_started" in bd.projects:
+        bd.projects.delete_project("timex_getting_started", delete_dir=True)
     bd.projects.set_current("timex_getting_started")
 
     bd.Database("biosphere").write(
@@ -100,6 +102,8 @@ def add_timex_getting_started_project():
     )
 
 def add_timex_ev_example_project():
+    if "timex_ev_example" in bd.projects:
+        bd.projects.delete_project("timex_ev_example", delete_dir=True)
     bd.projects.set_current("timex_ev_example")
     biosphere = bd.Database("biosphere")
     biosphere.write(
@@ -297,10 +301,10 @@ def add_timex_ev_example_project():
         ]
     )
         
-if "timex_getting_started" not in bd.projects:
-    add_timex_getting_started_project()
-if "timex_ev_example" not in bd.projects:
-    add_timex_ev_example_project()
+# if "timex_getting_started" not in bd.projects:
+add_timex_getting_started_project()
+# if "timex_ev_example" not in bd.projects:
+add_timex_ev_example_project()
 
 _, col, _ = st.columns([1, 2, 1])
 with col:
