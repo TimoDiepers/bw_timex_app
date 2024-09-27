@@ -97,7 +97,7 @@ def add_temporal_information(selected_exchange):
         )
         selected_time_resolution = RESOLUTION_LABELS[selected_time_resolution_label]
 
-        if distribution_type:
+        if distribution_type != "manual":
             col_start, col_end = st.columns(2)
             with col_start:
                 start = st.number_input("Start", value=0)
