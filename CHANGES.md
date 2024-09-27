@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-09-24
+* Added calculation mode
+
 ## [0.1.3] - 2024-09-24
 * Fixed entry points
 * Changed script name to `bw-timex`
