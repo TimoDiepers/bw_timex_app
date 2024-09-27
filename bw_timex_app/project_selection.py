@@ -3,12 +3,15 @@ import os
 import streamlit as st
 import bw2data as bd
 
-os.environ['BRIGHTWAY2_DIR']='/tmp/'
+os.environ["BRIGHTWAY2_DIR"] = "/tmp/"
 
-st.set_page_config(page_title="bw_timex_app", layout="centered", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="bw_timex_app", layout="centered", initial_sidebar_state="collapsed"
+)
 
-if 'current_project' not in st.session_state:
+if "current_project" not in st.session_state:
     st.session_state.current_project = None
+
 
 def add_timex_getting_started_project():
     if "timex_getting_started" in bd.projects:
@@ -67,7 +70,7 @@ def add_timex_getting_started_project():
                         "amount": 5,
                         "type": "biosphere",
                         "input": ("biosphere", "CO2"),
-                    }
+                    },
                 ],
             },
         }
@@ -101,6 +104,7 @@ def add_timex_getting_started_project():
         }
     )
 
+
 def add_timex_ev_example_project():
     if "timex_ev_example" in bd.projects:
         bd.projects.delete_project("timex_ev_example", delete_dir=True)
@@ -128,9 +132,9 @@ def add_timex_ev_example_project():
         background_2030,
         background_2040,
     ]
-    
+
     process_co2_emissions = {
-        "glider": (10, 5, 2.5), # for 2020, 2030 and 2040
+        "glider": (10, 5, 2.5),  # for 2020, 2030 and 2040
         "powertrain": (20, 10, 7.5),
         "battery": (10, 5, 4),
         "electricity": (0.5, 0.25, 0.075),
@@ -143,40 +147,52 @@ def add_timex_ev_example_project():
 
     for component_name, gwis in process_co2_emissions.items():
         for database, gwi in zip(background_databases, gwis):
-            database.new_node(component_name, name=component_name, location="somewhere").save()
+            database.new_node(
+                component_name, name=component_name, location="somewhere"
+            ).save()
             component = database.get(component_name)
-            component["reference product"] = component_name        
+            component["reference product"] = component_name
             component.save()
             production_amount = -1 if "eol" in component_name else 1
-            component.new_edge(input=component, amount=production_amount, type="production").save()
-            component.new_edge(input=node_co2, amount=gwi, type="biosphere").save()       
+            component.new_edge(
+                input=component, amount=production_amount, type="production"
+            ).save()
+            component.new_edge(input=node_co2, amount=gwi, type="biosphere").save()
 
-    ELECTRICITY_CONSUMPTION = 0.2 # kWh/km
-    MILEAGE = 150_000 # km
-    LIFETIME = 15 # years
+    ELECTRICITY_CONSUMPTION = 0.2  # kWh/km
+    MILEAGE = 150_000  # km
+    LIFETIME = 15  # years
 
     # Overall mass: 1200 kg
-    MASS_GLIDER = 840 # kg
-    MASS_POWERTRAIN = 80 # kg
-    MASS_BATTERY = 280 # kg
-        
+    MASS_GLIDER = 840  # kg
+    MASS_POWERTRAIN = 80  # kg
+    MASS_BATTERY = 280  # kg
+
     if "foreground" in bd.databases:
-        del bd.databases["foreground"] # to make sure we create the foreground from scratch
+        del bd.databases[
+            "foreground"
+        ]  # to make sure we create the foreground from scratch
     foreground = bd.Database("foreground")
     foreground.register()
-    
-    ev_production = foreground.new_node("ev_production", name="production of an electric vehicle", unit="unit")
-    ev_production['reference product'] = "electric vehicle"
+
+    ev_production = foreground.new_node(
+        "ev_production", name="production of an electric vehicle", unit="unit"
+    )
+    ev_production["reference product"] = "electric vehicle"
     ev_production.save()
 
-    driving = foreground.new_node("driving", name="driving an electric vehicle", unit="transport over an ev lifetime")
-    driving['reference product'] = "transport"
+    driving = foreground.new_node(
+        "driving",
+        name="driving an electric vehicle",
+        unit="transport over an ev lifetime",
+    )
+    driving["reference product"] = "transport"
     driving.save()
 
     used_ev = foreground.new_node("used_ev", name="used electric vehicle", unit="unit")
-    used_ev['reference product'] = "used electric vehicle"
+    used_ev["reference product"] = "used electric vehicle"
     used_ev.save()
-    
+
     glider_production = background_2020.get(code="glider")
     powertrain_production = background_2020.get(code="powertrain")
     battery_production = background_2020.get(code="battery")
@@ -184,26 +200,22 @@ def add_timex_ev_example_project():
     ev_production.new_edge(input=ev_production, amount=1, type="production").save()
 
     glider_to_ev = ev_production.new_edge(
-        input=glider_production,
-        amount=MASS_GLIDER, 
-        type="technosphere"
+        input=glider_production, amount=MASS_GLIDER, type="technosphere"
     )
     powertrain_to_ev = ev_production.new_edge(
-        input=powertrain_production, 
-        amount=MASS_POWERTRAIN, 
-        type="technosphere"
+        input=powertrain_production, amount=MASS_POWERTRAIN, type="technosphere"
     )
     battery_to_ev = ev_production.new_edge(
-        input=battery_production, 
-        amount=MASS_BATTERY, 
-        type="technosphere"
+        input=battery_production, amount=MASS_BATTERY, type="technosphere"
     )
 
     glider_eol = background_2020.get(name="glider_eol")
     powertrain_eol = background_2020.get(name="powertrain_eol")
     battery_eol = background_2020.get(name="battery_eol")
 
-    used_ev.new_edge(input=used_ev, amount=-1, type="production").save()  # -1 as this gets rid of a used car
+    used_ev.new_edge(
+        input=used_ev, amount=-1, type="production"
+    ).save()  # -1 as this gets rid of a used car
 
     used_ev_to_glider_eol = used_ev.new_edge(
         input=glider_eol,
@@ -226,17 +238,13 @@ def add_timex_ev_example_project():
     driving.new_edge(input=driving, amount=1, type="production").save()
 
     driving_to_used_ev = driving.new_edge(input=used_ev, amount=-1, type="technosphere")
-    ev_to_driving = driving.new_edge(
-        input=ev_production, 
-        amount=1, 
-        type="technosphere"
-    )
+    ev_to_driving = driving.new_edge(input=ev_production, amount=1, type="technosphere")
     electricity_to_driving = driving.new_edge(
         input=electricity_production,
         amount=ELECTRICITY_CONSUMPTION * MILEAGE,
         type="technosphere",
     )
-    
+
     from bw_temporalis import TemporalDistribution, easy_timedelta_distribution
     import numpy as np
 
@@ -245,7 +253,8 @@ def add_timex_ev_example_project():
     )
 
     td_glider_production = TemporalDistribution(
-        date=np.array([-2, -1, 0], dtype="timedelta64[Y]"), amount=np.array([0.7, 0.1, 0.2])
+        date=np.array([-2, -1, 0], dtype="timedelta64[Y]"),
+        amount=np.array([0.7, 0.1, 0.2]),
     )
 
     td_produce_powertrain_and_battery = TemporalDistribution(
@@ -257,7 +266,7 @@ def add_timex_ev_example_project():
         end=LIFETIME,
         resolution="Y",
         steps=(LIFETIME + 1),
-        kind="uniform", # you can also do "normal" or "triangular" distributions
+        kind="uniform",  # you can also do "normal" or "triangular" distributions
     )
 
     td_disassemble_used_ev = TemporalDistribution(
@@ -300,7 +309,8 @@ def add_timex_ev_example_project():
             (("biosphere", "CO2"), 1),
         ]
     )
-        
+
+
 # if "timex_getting_started" not in bd.projects:
 add_timex_getting_started_project()
 # if "timex_ev_example" not in bd.projects:
@@ -310,9 +320,11 @@ _, col, _ = st.columns([1, 2, 1])
 with col:
     st.title("Select a Project")
     st.text("")
-    project_names = [project.name for project in bd.projects] #+ ["Create New Project..."]
+    project_names = [
+        project.name for project in bd.projects
+    ]  # + ["Create New Project..."]
     selected_project = st.selectbox("Your Available Projects", options=project_names)
-    
+
     # new_project_name = None
     # if selected_project == "Create New Project...":
     #     new_project_name = st.text_input("New Project Name")
@@ -323,5 +335,5 @@ with col:
     if st.button("Activate Selected Project", use_container_width=True, type="primary"):
         bd.projects.set_current(selected_project)
         st.session_state.current_project = selected_project
-        
+
         st.switch_page("pages/mode.py")

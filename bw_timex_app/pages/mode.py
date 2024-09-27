@@ -1,7 +1,9 @@
 import streamlit as st
 import bw2data as bd
 
-st.set_page_config(page_title="bw_timex_app", layout="centered", initial_sidebar_state='collapsed')
+st.set_page_config(
+    page_title="bw_timex_app", layout="centered", initial_sidebar_state="collapsed"
+)
 
 if "current_project" not in st.session_state:
     st.switch_page("project_selection.py")
@@ -20,7 +22,12 @@ with st.sidebar:
     projects.remove(st.session_state.current_project)
     projects.insert(0, st.session_state.current_project)
     selected_project = st.selectbox("Project Selection", options=projects)
-    if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
+    if st.button(
+        "Switch Project",
+        use_container_width=True,
+        type="primary",
+        disabled=selected_project == bd.projects.current,
+    ):
         st.session_state.current_project = selected_project
         if "tlca_demand_candidates" in st.session_state:
             del st.session_state.tlca_demand_candidates
