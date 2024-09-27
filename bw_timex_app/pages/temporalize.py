@@ -78,31 +78,24 @@ def reset_candidates_state():
 def add_temporal_information(selected_exchange):
     st.write(selected_exchange)
     col_input, col_graph = st.columns([1, 2])
-
+    td = None
+    
     with col_input:
         # Initialize list to store points
-        if "x_points" not in st.session_state:
-            st.session_state.x_points = []
-        if "y_points" not in st.session_state:
-            st.session_state.y_points = []
+        if "manual_amounts" not in st.session_state:
+            st.session_state.manual_amounts = []
+        if "manual_dates" not in st.session_state:
+            st.session_state.manual_dates = []
+
+        distribution_type = st.selectbox(
+            "Distribution Type", options=["uniform", "triangular", "normal", "manual"]
+        )  # , "manual"
 
         selected_time_resolution_label = st.selectbox(
             "Time Resolution", options=["Years", "Months", "Days", "Hours"]
         )
         selected_time_resolution = RESOLUTION_LABELS[selected_time_resolution_label]
-
-        distribution_type = st.selectbox(
-            "Distribution Type", options=["uniform", "triangular", "normal"]
-        )  # , "manual"
-
-        # if distribution_type == "manual":
-        #     x_value = st.number_input("Amount", value=0.0, max_value=1)
-        #     y_value = st.number_input(f"Timedelta [{selected_time_resolution_label}]", value=0.0)
-
-        #     # Add the point when the button is clicked
-        #     if st.button("Add Point"):
-        #         st.session_state.points.append((x_value, y_value))
-
+        
         if distribution_type:
             col_start, col_end = st.columns(2)
             with col_start:
@@ -147,45 +140,65 @@ def add_temporal_information(selected_exchange):
                 kind=distribution_type,
                 param=param,
             )
+            
+        if distribution_type == "manual":
 
-        td_df = pd.DataFrame({"date": td.date, "amount": td.amount})
+            # Add the point when the button is clicked
+            amounts_input = st.text_input("Share (Array)", value="[0.1, 0.2, 0.7]")
+            st.session_state.manual_amounts = np.array(eval(amounts_input))
+            dates_input = st.text_input("Dates (Array)", value="[-5, 0, 2]")
+            st.session_state.manual_dates = np.array(eval(dates_input))
+            
+            if sum(st.session_state.manual_amounts) != 1:
+                st.error(f"The current amounts don't add up to 1")
+            else:
+                timedelta_type = f"timedelta64[{selected_time_resolution}]"
+                td = TemporalDistribution(
+                    date=np.array(st.session_state.manual_dates, dtype=timedelta_type),
+                    amount=np.array(st.session_state.manual_amounts),
+                )
+        if td:
+            td_df = pd.DataFrame({"date": td.date, "amount": td.amount})
 
-        # Handle years manually (approximate a year as 365.25 days)
-        if selected_time_resolution == "Y":
-            td_df["date_converted"] = td_df["date"] / np.timedelta64(1, "D") / 365.25
-        elif selected_time_resolution == "M":
-            td_df["date_converted"] = td_df["date"] / np.timedelta64(1, "D") / 30.4375
-        else:
-            # Conversion factors for other units
-            conversion_factor = {
-                "D": np.timedelta64(1, "D"),
-                "h": np.timedelta64(1, "h"),
-            }
+            # Handle years manually (approximate a year as 365.25 days)
+            if selected_time_resolution == "Y":
+                td_df["date_converted"] = td_df["date"] / np.timedelta64(1, "D") / 365.25
+            elif selected_time_resolution == "M":
+                td_df["date_converted"] = td_df["date"] / np.timedelta64(1, "D") / 30.4375
+            else:
+                # Conversion factors for other units
+                conversion_factor = {
+                    "D": np.timedelta64(1, "D"),
+                    "h": np.timedelta64(1, "h"),
+                }
 
-            # Convert timedelta64 to the chosen unit as floats
-            td_df["date_converted"] = (
-                td_df["date"] / conversion_factor[selected_time_resolution]
-            )
+                # Convert timedelta64 to the chosen unit as floats
+                td_df["date_converted"] = (
+                    td_df["date"] / conversion_factor[selected_time_resolution]
+                )
 
-        if st.button("Add to Exchange", use_container_width=True, type="primary"):
+        if st.button("Add to Exchange", use_container_width=True, type="primary", disabled=not td):
             selected_exchange["temporal_distribution"] = td
             selected_exchange.save()
             # st.toast("Temporal Information added to the Exchange", icon="🎉")
-            st.rerun()
+            st.rerun(scope="app")
 
     with col_graph:
         # Create a scatter plot
-        fig = px.scatter(
-            td_df,
-            x="date_converted",
-            y="amount",
-            labels={
-                "date_converted": f"Timedelta ({selected_time_resolution_label})",
-                "amount": "Amount",
-            },
-        )
-        # Display the plot in Streamlit
-        st.plotly_chart(fig)
+        if td:
+            fig = px.scatter(
+                td_df,
+                x="date_converted",
+                y="amount",
+                labels={
+                    "date_converted": f"Timedelta ({selected_time_resolution_label})",
+                    "amount": "Amount",
+                },
+            )
+            # Display the plot in Streamlit
+            st.plotly_chart(fig)
+        else:
+            st.info("No Temporal Distribution to display.")
 
 
 def node_class(database_name):
@@ -268,16 +281,43 @@ def calculate(demand, method, **kwargs):
             dict_view["Score"].append(score)
 
     return dict_view, dict_store
-
+def clear_variables():
+    if "tlca_demand_candidates" in st.session_state:
+        del st.session_state.tlca_demand_candidates
+    if "tlca_demand_activity" in st.session_state:
+        del st.session_state.tlca_demand_activity
+    if "current_candidates" in st.session_state:
+        del st.session_state.current_candidates
+    if "current_demand_candidates" in st.session_state:
+        del st.session_state.current_demand_candidates
+    if "selected_candidate" in st.session_state:
+        del st.session_state.selected_candidate
+    if "selected_candidate_exchanges" in st.session_state:
+        del st.session_state.selected_candidate_exchanges
+    if "selected_exchange" in st.session_state:
+        del st.session_state.selected_exchange
+    if "manual_amounts" not in st.session_state:
+        del st.session_state.manual_amounts
+    if "manual_dates" not in st.session_state:
+        del st.session_state.manual_dates
+        
 st.title("Temporalize your Data")
-candidates = []
+if "current_candidates" not in st.session_state:
+    st.session_state.current_candidates = []
+if "current_demand_candidates" not in st.session_state:
+    st.session_state.current_demand_candidates = []
+if "selected_candidate" not in st.session_state:
+    st.session_state.selected_candidate = None
+if "selected_demand_candidate" not in st.session_state:
+    st.session_state.selected_demand_candidate = None
+    
 tab_search, tab_calc = st.tabs(["Direct Activity Selection", "Select from Contributions"])
 with tab_search:
     col_activity_selection, col_exchange_selection = st.columns(2, gap="medium")
     with col_activity_selection:
         # Create a form for search inputs with a title and description
-        with st.form(key="search_form"):
-            st.subheader("🔍 Filter Activities")
+        with st.container(border=True):
+            st.subheader("🔍 Activity Selection")
 
             input_db_names = list(bd.databases)
             selected_db = st.selectbox(
@@ -287,8 +327,7 @@ with tab_search:
             location = st.text_input("Location", key="location")
 
             # Form submit button
-            submitted = st.form_submit_button("Apply Filter", use_container_width=True)
-            if submitted:
+            if st.button("Apply Filter", use_container_width=True):
                 if not selected_db:
                     st.warning("Please select an input database.")
                 else:
@@ -296,85 +335,79 @@ with tab_search:
                         st.session_state.current_candidates = find_candidates(
                             selected_db, activity_name, location
                         )
-                        if not st.session_state.current_candidates:
-                            st.warning(
-                                "No candidates found"
-                            )
-                        elif len(st.session_state.current_candidates) == 1:
-                            st.success("One candidate remaining")
-                        else:
-                            st.success(
-                                f"{len(st.session_state.current_candidates)} candidates remaining"
-                            )
+                            
+            if len(st.session_state.current_candidates) == 0:
+                st.info("No candidates to display.")
+            else:
+                if len(st.session_state.current_candidates) >= 100:
+                    st.warning(
+                        "Too many candidates to display. Please refine your search."
+                    )
+                else:
+                    st.session_state.selected_candidate = st.selectbox(
+                        "Choose Candidate", options=st.session_state.current_candidates
+                    )
 
     with col_exchange_selection:
-        st.subheader("Available Candidates")
-
-        if "current_candidates" not in st.session_state:
-            st.info("No candidates to display. Please perform a search.")
-        else:
-            if len(st.session_state.current_candidates) >= 100:
-                st.warning(
-                    "Too many candidates to display. Please refine your search."
-                )
-            else:
-                st.session_state.selected_candidate = st.selectbox(
-                    "Choose Candidate", options=st.session_state.current_candidates
-                )
-                if "selected_candidate" in st.session_state:
+        with st.container(border=True):
+            st.subheader("Exchange Selection")
+            if "selected_candidate" in st.session_state:
+                if st.session_state.selected_candidate:
                     st.session_state.selected_candidate_exchanges = list(
                         st.session_state.selected_candidate.exchanges()
                     )
-                    selected_exchange = st.selectbox(
-                        "Choose Exchange",
-                        options=st.session_state.selected_candidate_exchanges,
-                    )
-                    st.session_state.selected_exchange = selected_exchange
+                else:
+                    st.session_state.selected_candidate_exchanges = []
+                selected_exchange = st.selectbox(
+                    "Choose Exchange",
+                    options=st.session_state.selected_candidate_exchanges,
+                )
+                st.session_state.selected_exchange = selected_exchange
 
-                    if "selected_exchange" in st.session_state:
-                        if st.session_state.selected_exchange.get(
+                if st.session_state.selected_exchange:
+                    if st.session_state.selected_exchange.get(
+                        "temporal_distribution"
+                    ):
+                        st.info("This Exchange carries Temporal Information.")
+                        st.session_state.selected_exchange[
                             "temporal_distribution"
+                        ]
+
+                        if st.button(
+                            "Overwrite Temporal Information", type="primary", key="overwrite_search"
                         ):
-                            st.info("This Exchange carries Temporal Information.")
-                            st.session_state.selected_exchange[
-                                "temporal_distribution"
-                            ]
-
-                            if st.button(
-                                "Overwrite Temporal Information", type="primary", key="overwrite_search"
-                            ):
-                                add_temporal_information(
-                                    st.session_state.selected_exchange
-                                )
-
-                            if st.button("Remove Temporal Information", key="remove_search"):
-                                st.session_state.selected_exchange.pop(
-                                    "temporal_distribution"
-                                )
-                                st.session_state.selected_exchange.save()
-                                st.success(
-                                    "Temporal Information removed from the Exchange",
-                                    icon="🗑️",
-                                )
-                        else:
-                            st.warning(
-                                "This Exchange carries no Temporal Information."
+                            add_temporal_information(
+                                st.session_state.selected_exchange
                             )
-                            if st.button(
-                                "Add Temporal Information",
-                                type="primary",
-                                key="add_td_search",
-                            ):
-                                add_temporal_information(
-                                    st.session_state.selected_exchange
-                                )
+
+                        if st.button("Remove Temporal Information", key="remove_search"):
+                            st.session_state.selected_exchange.pop(
+                                "temporal_distribution"
+                            )
+                            st.session_state.selected_exchange.save()
+                            st.success(
+                                "Temporal Information removed from the Exchange",
+                                icon="🗑️",
+                            )
+                    else:
+                        st.warning(
+                            "This Exchange carries no Temporal Information."
+                        )
+                        if st.button(
+                            "Add Temporal Information",
+                            type="primary",
+                            key="add_td_search",
+                        ):
+                            add_temporal_information(
+                                st.session_state.selected_exchange
+                            )
 
 with tab_calc:
     col_demand_selection, col_lca, col_df = st.columns([1, 1, 2])
     with col_demand_selection:
         # Create a form for search inputs with a title and description
-        with st.form(key="search_demand_form"):
-            st.subheader("🔍 Filter Activities")
+        with st.container(border=True):
+            st.subheader("🔍 Demand Selection")
 
             input_db_names = list(bd.databases)
             selected_db = st.selectbox(
@@ -387,8 +420,7 @@ with tab_calc:
             if "current_demand_candidates" not in st.session_state:
                 st.session_state.current_demand_candidates = []
 
-            submitted = st.form_submit_button("Apply Filter", use_container_width=True)
-            if submitted:
+            if st.button("Apply Filter", use_container_width=True, key="apply_filter_demand"):
                 if not selected_db:
                     st.warning("Please select an input database.")
                 else:
@@ -396,49 +428,48 @@ with tab_calc:
                         st.session_state.current_demand_candidates = (
                             find_candidates(selected_db, activity_name, location)
                         )
-                        if not st.session_state.current_demand_candidates:
-                            st.warning(
-                                "No candidates found matching the search criteria."
-                            )
-                        elif len(st.session_state.current_demand_candidates) == 1:
-                            st.success("Found 1 candidate.")
-                        else:
-                            st.success(
-                                f"Found {len(st.session_state.current_demand_candidates)} candidates."
-                            )
+
+            if len(st.session_state.current_demand_candidates) == 0:
+                st.info("No candidates to display")
+            else:
+                if len(st.session_state.current_demand_candidates) >= 100:
+                    st.warning(
+                        "Too many candidates to display. Please refine your search."
+                    )
+                else:
+                    st.session_state.selected_demand_candidate = st.selectbox(
+                        "Choose Candidate", options=st.session_state.current_demand_candidates, key="select_demand_candidate"
+                    )
 
     with col_lca:
-        with st.form(key="lca_form"):
+        with st.container(border=True):
             st.subheader("🧮  Calculation")
             st.write(
-                "Select a Demand Activity and a Method and Start the LCA and Graph Traversal Calculations."
+                "Select a Method and Start the LCA and Graph Traversal Calculations to find the most important exchanges."
             )
-            if "current_demand_candidates" in st.session_state:
-                st.session_state.selected_demand = st.selectbox(
-                    "Select Activity",
-                    options=st.session_state.current_demand_candidates,
-                )
-                selected_method = st.selectbox("Method", options=bd.methods)
-                # cutoff = st.slider("Cutoff", min_value=0.005, max_value=1.000, value=0.010, step=0.001)
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    cutoff = st.number_input("Cutoff", value=0.010, step=0.001, min_value=0.001, max_value=1.000)
-                with col2:
-                    max_calc = st.number_input("Max Calc", value=1000, step=100, min_value=0, max_value=10000)
-                with col3:
-                    max_depth = st.number_input("Max Depth", value=3, step=1, min_value=0, max_value=1000)
+            st.markdown(f"Selected Demand:`{st.session_state.selected_demand_candidate}`")
+                     
+            selected_method = st.selectbox("Method", options=bd.methods)
+            # cutoff = st.slider("Cutoff", min_value=0.005, max_value=1.000, value=0.010, step=0.001)
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                cutoff = st.number_input("Cutoff", value=0.010, step=0.001, min_value=0.001, max_value=1.000)
+            with col2:
+                max_calc = st.number_input("Max Calc", value=1000, step=100, min_value=0, max_value=10000)
+            with col3:
+                max_depth = st.number_input("Max Depth", value=3, step=1, min_value=0, max_value=1000)
                     
-            calc_button_disabled = not st.session_state.selected_demand or not selected_method
+            calc_button_disabled = not st.session_state.selected_demand_candidate or not selected_method
             
-            submitted = st.form_submit_button("Calculate", use_container_width=True, disabled=calc_button_disabled)
+            submitted = st.button("Calculate", use_container_width=True, disabled=calc_button_disabled)
             if (
                 submitted
-                and "selected_demand" in st.session_state
+                and "selected_demand_candidate" in st.session_state
                 and selected_method
             ):
                 with st.spinner("*Crunching the numbers...*"):
                     dict_view, dict_store = calculate(
-                        st.session_state.selected_demand, selected_method, cutoff=cutoff, max_calc=max_calc, max_depth=max_depth,
+                        st.session_state.selected_demand_candidate, selected_method, cutoff=cutoff, max_calc=max_calc, max_depth=max_depth,
                     )
                     df_view = pd.DataFrame(dict_view)
                     df_view.sort_values(by="Score", ascending=False, inplace=True)
@@ -509,10 +540,6 @@ with tab_calc:
                     ):
                         add_temporal_information(st.session_state.selected_exchange)
 
-        # if "selection" in st.session_state:
-        #     selected_row = st.session_state.res_df.loc[st.session_state.selection["rows"][0]]
-        #     st.write(selected_row)
-
 with st.sidebar:
     projects = [p.name for p in bd.projects]
     projects.remove(st.session_state.current_project)
@@ -520,15 +547,12 @@ with st.sidebar:
     selected_project = st.selectbox("Project Selection", options=projects)
     if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
         st.session_state.current_project = selected_project
-        if "tlca_demand_candidates" in st.session_state:
-            del st.session_state.tlca_demand_candidates
-        if "tlca_demand_activity" in st.session_state:
-            del st.session_state.tlca_demand_activity
+        bd.projects.set_current(selected_project)
+        clear_variables()
         st.rerun()
         
     st.divider()
-    mode = st.selectbox("Mode Selection", options=["Calculation", "Temporalization"])
+    mode = st.selectbox("Mode Selection", options=["Temporalization", "Calculation"])
     if st.button("Switch Mode", use_container_width=True, type="primary", disabled=mode == "Temporalization"):
-        del st.session_state.tlca_demand_candidates
-        del st.session_state.tlca_demand_activity
+        clear_variables()
         st.switch_page("pages/calculate.py")

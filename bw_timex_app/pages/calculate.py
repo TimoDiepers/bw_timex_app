@@ -181,7 +181,7 @@ with st.container(border=True):
     
     with col_activity:
         activity_display = st.session_state.get('tlca_demand_activity', 'None')
-        st.markdown(f"Selected Demand Activity: **`{activity_display}`**")
+        st.markdown(f"Selected Demand Activity: `{activity_display}`")
     
     with col_change:
         activity_label = "Change" if st.session_state.get('tlca_demand_activity') else "Search Activities"
@@ -255,6 +255,7 @@ with st.sidebar:
     selected_project = st.selectbox("Project Selection", options=projects)
     if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
         st.session_state.current_project = selected_project
+        bd.projects.set_current(selected_project)
         del st.session_state.tlca_demand_candidates
         del st.session_state.tlca_demand_activity
         st.rerun()
