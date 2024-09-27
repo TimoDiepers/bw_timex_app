@@ -22,6 +22,8 @@ with st.sidebar:
     selected_project = st.selectbox("Project Selection", options=projects)
     if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
         st.session_state.current_project = selected_project
-        del st.session_state.tlca_demand_candidates
-        del st.session_state.tlca_demand_activity
+        if "tlca_demand_candidates" in st.session_state:
+            del st.session_state.tlca_demand_candidates
+        if "tlca_demand_activity" in st.session_state:
+            del st.session_state.tlca_demand_activity
         st.rerun()

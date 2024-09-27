@@ -262,6 +262,8 @@ with st.sidebar:
     st.divider()
     mode = st.selectbox("Mode Selection", options=["Calculation", "Temporalization"])
     if st.button("Switch Mode", use_container_width=True, type="primary", disabled=mode == "Calculation"):
-        del st.session_state.tlca_demand_candidates
-        del st.session_state.tlca_demand_activity
+        if "tlca_demand_candidates" in st.session_state:
+            del st.session_state.tlca_demand_candidates
+        if "tlca_demand_activity" in st.session_state:
+            del st.session_state.tlca_demand_activity
         st.switch_page("pages/temporalize.py")
