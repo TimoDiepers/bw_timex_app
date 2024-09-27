@@ -1,8 +1,14 @@
+# The regex used is a bit different from original documenation:
+# https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html#loading-data-from-other-files
+# Originald documentation implies that the __init__.py only has one line with __version__
+{% set version_match = load_file_regex(load_file="bw_timex_app/__init__.py",
+regex_pattern='(?:.*)__version__ = "(.+)"') %}
+{% set version = version_match[1] %}
 # conda build --output-folder ./conda-out/ ./conda/ -c conda-forge -c cmutel -c diepers
 
 package:
   name: "bw_timex_app"
-  version: "0.1.3"
+  version: {{ version }}
 
 about:
   summary: "Streamlit app for bw_timex"
@@ -15,12 +21,10 @@ about:
 
 requirements:
   build:
-    - python={{ python_version }}
+    - python
     - setuptools
-    - wheel
-    - pip
   run:
-    - python={{ python_version }}
+    - python >=3.9
     - bw_timex >=0.2.6
     - bw2io >=0.9.dev38
     - bw2data >=4.0.dev56
@@ -37,7 +41,6 @@ build:
     - rm -rf $SRC_DIR/docs
     - rm -rf $SRC_DIR/dev
     - {{ PYTHON }} -m pip install . --no-deps -vv
-  string: py{{ python_version | replace('.', '') }}
   exclude_files:
     - docs/*
     - dev/*
