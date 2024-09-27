@@ -575,7 +575,7 @@ with tab_calc:
                     with col2:
                         if st.button(
                             "Remove Temporal Information",
-                            key="remove_search",
+                            key="remove_calc",
                             use_container_width=True,
                         ):
                             st.session_state.selected_exchange.pop(
