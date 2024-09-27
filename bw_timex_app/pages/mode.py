@@ -1,4 +1,5 @@
 import streamlit as st
+import bw2data as bd
 
 st.set_page_config(page_title="bw_timex_app", layout="centered", initial_sidebar_state='collapsed')
 
@@ -15,7 +16,12 @@ with col:
         st.switch_page("pages/temporalize.py")
 
 with st.sidebar:
-    if st.button("Calculate TimexLCAs", use_container_width=True, type="primary"):
-        st.switch_page("pages/mode.py")
-    if st.button("Select a different Project", use_container_width=True):
-        st.switch_page("project_selection.py")
+    projects = [p.name for p in bd.projects]
+    projects.remove(st.session_state.current_project)
+    projects.insert(0, st.session_state.current_project)
+    selected_project = st.selectbox("Project Selection", options=projects)
+    if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
+        st.session_state.current_project = selected_project
+        del st.session_state.tlca_demand_candidates
+        del st.session_state.tlca_demand_activity
+        st.rerun()

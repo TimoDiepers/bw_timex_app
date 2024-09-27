@@ -514,9 +514,19 @@ with tab_calc:
         #     st.write(selected_row)
 
 with st.sidebar:
-    if st.button("Calculate TimexLCAs", use_container_width=True, type="primary"):
-        reset_candidates_state()
-        st.switch_page("pages/mode.py")
-    if st.button("Select a different Project", use_container_width=True):
-        reset_candidates_state()
-        st.switch_page("project_selection.py")
+    projects = [p.name for p in bd.projects]
+    projects.remove(st.session_state.current_project)
+    projects.insert(0, st.session_state.current_project)
+    selected_project = st.selectbox("Project Selection", options=projects)
+    if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
+        st.session_state.current_project = selected_project
+        del st.session_state.tlca_demand_candidates
+        del st.session_state.tlca_demand_activity
+        st.rerun()
+        
+    st.divider()
+    mode = st.selectbox("Mode Selection", options=["Calculation", "Temporalization"])
+    if st.button("Switch Mode", use_container_width=True, type="primary", disabled=mode == "Temporalization"):
+        del st.session_state.tlca_demand_candidates
+        del st.session_state.tlca_demand_activity
+        st.switch_page("pages/calculate.py")

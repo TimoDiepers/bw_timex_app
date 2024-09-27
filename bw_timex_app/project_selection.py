@@ -310,18 +310,18 @@ _, col, _ = st.columns([1, 2, 1])
 with col:
     st.title("Select a Project")
     st.text("")
-    project_names = [project.name for project in bd.projects] + ["Create New Project..."]
+    project_names = [project.name for project in bd.projects] #+ ["Create New Project..."]
     selected_project = st.selectbox("Your Available Projects", options=project_names)
     
-    new_project_name = None
-    if selected_project == "Create New Project...":
-        new_project_name = st.text_input("New Project Name")
-        if st.button("Create New Project", use_container_width=True, type="primary", disabled=not new_project_name):
-            bd.projects.set_current(new_project_name)
-            st.switch_page("pages/mode.py")
-    else:
-        if st.button("Activate Selected Projet", use_container_width=True, type="primary"):
-            bd.projects.set_current(selected_project)
-            st.session_state.current_project = selected_project
-            
-            st.switch_page("pages/mode.py")
+    # new_project_name = None
+    # if selected_project == "Create New Project...":
+    #     new_project_name = st.text_input("New Project Name")
+    #     if st.button("Create New Project", use_container_width=True, type="primary", disabled=not new_project_name):
+    #         bd.projects.set_current(new_project_name)
+    #         st.switch_page("pages/mode.py")
+    # else:
+    if st.button("Activate Selected Project", use_container_width=True, type="primary"):
+        bd.projects.set_current(selected_project)
+        st.session_state.current_project = selected_project
+        
+        st.switch_page("pages/mode.py")

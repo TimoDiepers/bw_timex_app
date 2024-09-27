@@ -21,7 +21,9 @@ requirements:
     - pip
   run:
     - python={{ python_version }}
-    - bw_timex >=0.2.4
+    - bw_timex >=0.2.6
+    - bw2io >=0.9.dev38
+    - bw2data >=4.0.dev56
     - streamlit >=1.38.0
     - plotly
   entry_points:

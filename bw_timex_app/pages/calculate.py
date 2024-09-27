@@ -22,6 +22,8 @@ st.markdown(
 
 if "current_project" not in st.session_state:
     st.switch_page("project_selection.py")
+    
+bd.projects.set_current(st.session_state.current_project)
 
 @st.cache_data
 def find_candidates(db, activity_name=None, location=None):
@@ -91,16 +93,24 @@ def select_demand_activity():
 @st.fragment
 def show_results():
     tlca = st.session_state.tlca
+    st.header("TimexLCA Results")
+    st.write("Process Timeline:")
+    st.dataframe(timeline)
     st.write("Static score: ", tlca.static_score)
+    st.write("Impact category:", tlca.method)
 
-    from dynamic_characterization.ipcc_ar6 import characterize_co2
-    emission_id = bd.get_node(code="CO2").id
+    using_biosphere = False
+    if not using_biosphere:
+        from dynamic_characterization.ipcc_ar6 import characterize_co2
+        emission_id = bd.get_node(code="CO2").id
 
-    characterization_function_dict = {
-        emission_id: characterize_co2,
-    }
+        characterization_function_dict = {
+            emission_id: characterize_co2,
+        }
+    else:
+        characterization_function_dict = None
 
-    def plot_characterized_inventory(tlca):
+    def plot_characterized_inventory(tlca, **kwargs):
         from bw_timex.utils import resolve_temporalized_node_name
         # Prepare the plot data
         metric_ylabels = {
@@ -132,7 +142,7 @@ def show_results():
 
     col_th_rf, col_th_rf_f = st.columns([4, 1])
     with col_th_rf:
-        time_horizon_rf = st.slider("Time Horizon for Radiative Forcing", min_value=2, max_value=1000, value=100, step=1)
+        time_horizon_rf = st.slider("Time Horizon for Radiative Forcing", min_value=2, max_value=200, value=100, step=1)
     with col_th_rf_f:
         fixed_th_rf = st.checkbox("Fixed", value=False, key="fixed_checkbox_rf")
     tlca.dynamic_lcia(
@@ -145,7 +155,7 @@ def show_results():
     
     col_th_gwp, col_th_gwp_f = st.columns([4, 1])
     with col_th_gwp:
-        time_horizon_gwp = st.slider("Time Horizon for GWP", min_value=2, max_value=1000, value=100, step=1)
+        time_horizon_gwp = st.slider("Time Horizon for GWP", min_value=2, max_value=200, value=100, step=1)
     with col_th_gwp_f:
         fixed_th_gwp = st.checkbox("Fixed", value=False, key="fixed_checkbox_gwp")
     tlca.dynamic_lcia(
@@ -195,7 +205,7 @@ with st.container(border=True):
     df["Representative Date"] = df["Representative Date"].astype(str)
     
     st.write("")
-    st.write("*Assign representative dates to databases. Use a format like `2024-09-26' for temporally fixed and 'dynamic' for temporally distributed databases.*")
+    st.write("*Assign representative dates to the databases you want to consider. Use a format like `2024-09-26` for temporally fixed and type `dynamic` for temporally distributed databases.*")
     editor = st.data_editor(
         df,
         column_config={
@@ -218,25 +228,40 @@ with st.container(border=True):
             else:
                 return datetime.strptime(x, "%Y-%m-%d")
         database_date_dict = dict(zip(editor['Database'], editor['Representative Date'].apply(custom_convert_to_datetime)))
-        tlca = TimexLCA(
-            demand={st.session_state.tlca_demand_activity: amount},
-            method=selected_method,
-            database_date_dict=database_date_dict,
-        )
+        with st.status("Crunching the Numbers..."):
+            st.write("Initializing TimexLCA")
+            tlca = TimexLCA(
+                demand={st.session_state.tlca_demand_activity: amount},
+                method=selected_method,
+                database_date_dict=database_date_dict,
+            )
+            st.write("Building the Timeline")
+            timeline = tlca.build_timeline()
+            st.write("Calculating time-explicit LCI")
+            tlca.lci()
+            st.write("Done!")
+            tlca.static_lcia()
+            st.session_state.tlca = tlca
+            calculated = True
 
-        timeline = tlca.build_timeline()
-        st.dataframe(timeline)
-
-        tlca.lci()
-        tlca.static_lcia()
-        st.session_state.tlca = tlca
-        calculated = True
-        
-if calculated:
-    show_results()        
+with st.container(): 
+    if calculated:
+        show_results()        
         
 with st.sidebar:
-    if st.button("Calculate TimexLCAs", use_container_width=True, type="primary"):
-        st.switch_page("pages/mode.py")
-    if st.button("Select a different Project", use_container_width=True):
-        st.switch_page("project_selection.py")
+    projects = [p.name for p in bd.projects]
+    projects.remove(st.session_state.current_project)
+    projects.insert(0, st.session_state.current_project)
+    selected_project = st.selectbox("Project Selection", options=projects)
+    if st.button("Switch Project", use_container_width=True, type="primary", disabled=selected_project == bd.projects.current):
+        st.session_state.current_project = selected_project
+        del st.session_state.tlca_demand_candidates
+        del st.session_state.tlca_demand_activity
+        st.rerun()
+        
+    st.divider()
+    mode = st.selectbox("Mode Selection", options=["Calculation", "Temporalization"])
+    if st.button("Switch Mode", use_container_width=True, type="primary", disabled=mode == "Calculation"):
+        del st.session_state.tlca_demand_candidates
+        del st.session_state.tlca_demand_activity
+        st.switch_page("pages/temporalize.py")
