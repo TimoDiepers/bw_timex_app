@@ -296,9 +296,9 @@ def clear_variables():
         del st.session_state.selected_candidate_exchanges
     if "selected_exchange" in st.session_state:
         del st.session_state.selected_exchange
-    if "manual_amounts" not in st.session_state:
+    if "manual_amounts" in st.session_state:
         del st.session_state.manual_amounts
-    if "manual_dates" not in st.session_state:
+    if "manual_dates" in st.session_state:
         del st.session_state.manual_dates
         
 st.title("Temporalize your Data")
