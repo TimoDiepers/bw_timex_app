@@ -36,7 +36,7 @@ conda activate timex_app
 2. Run the app:
 
 ```console
-bw-timex-app
+bw-timex
 ```
 
 ## Contributing
