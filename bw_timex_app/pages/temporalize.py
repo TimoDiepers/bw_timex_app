@@ -341,13 +341,13 @@ with tab_search:
                             ]
 
                             if st.button(
-                                "Overwrite Temporal Information", type="primary"
+                                "Overwrite Temporal Information", type="primary", key="overwrite_search"
                             ):
                                 add_temporal_information(
                                     st.session_state.selected_exchange
                                 )
 
-                            if st.button("Remove Temporal Information"):
+                            if st.button("Remove Temporal Information", key="remove_search"):
                                 st.session_state.selected_exchange.pop(
                                     "temporal_distribution"
                                 )
@@ -488,10 +488,10 @@ with tab_calc:
                     st.info("This Exchange carries Temporal Information.")
                     st.session_state.selected_exchange["temporal_distribution"]
 
-                    if st.button("Overwrite Temporal Information", type="primary"):
+                    if st.button("Overwrite Temporal Information", type="primary", key="overwrite_calc"):
                         add_temporal_information(st.session_state.selected_exchange)
 
-                    if st.button("Remove Temporal Information"):
+                    if st.button("Remove Temporal Information", key="remove_calc"):
                         st.session_state.selected_exchange.pop(
                             "temporal_distribution"
                         )
