@@ -26,8 +26,7 @@ requirements:
     - bw2data >=4.0.dev56
     - streamlit >=1.38.0
     - plotly
-  entry_points:
-    - bw-timex = bw_timex_app.cli:main
+
 
 source:
   path: ..
@@ -44,6 +43,9 @@ build:
     - dev/*
     - notebooks/*
     - archive/*
+    
+  entry_points:
+    - bw-timex = bw_timex_app.cli:main
 
 files:
   include:
