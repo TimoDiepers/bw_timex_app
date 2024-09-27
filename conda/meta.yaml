@@ -41,7 +41,6 @@ build:
     - rm -rf $SRC_DIR/docs
     - rm -rf $SRC_DIR/dev
     - {{ PYTHON }} -m pip install . --no-deps -vv
-  string: py{{ python_version | replace('.', '') }}
   exclude_files:
     - docs/*
     - dev/*
