@@ -189,8 +189,8 @@ def add_temporal_information(selected_exchange):
         ):
             selected_exchange["temporal_distribution"] = td
             selected_exchange.save()
-            # st.toast("Temporal Information added to the Exchange", icon="🎉")
             st.rerun()
+            # st.toast("Temporal Information added to the Exchange", icon="🎉")
 
     with col_graph:
         # Create a scatter plot
@@ -403,7 +403,6 @@ with tab_search:
                                 add_temporal_information(
                                     st.session_state.selected_exchange
                                 )
-                                st.rerun()
                         with col2:
                             if st.button(
                                 "Remove Temporal Information",
@@ -418,7 +417,6 @@ with tab_search:
                                     "Temporal Information removed from the Exchange",
                                     icon="🗑️",
                                 )
-                                st.rerun()
                     else:
                         st.warning("This Exchange carries no Temporal Information.")
                         if st.button(
@@ -574,7 +572,6 @@ with tab_calc:
                             use_container_width=True,
                         ):
                             add_temporal_information(st.session_state.selected_exchange)
-                            st.rerun()
                     with col2:
                         if st.button(
                             "Remove Temporal Information",
@@ -589,7 +586,6 @@ with tab_calc:
                                 "Temporal Information removed from the Exchange",
                                 icon="🗑️",
                             )
-                            st.rerun()
 
                 else:
                     st.warning("This Exchange carries no Temporal Information.")
@@ -614,7 +610,6 @@ with st.sidebar:
         st.session_state.current_project = selected_project
         bd.projects.set_current(selected_project)
         clear_variables()
-        st.rerun()
 
     st.divider()
     mode = st.selectbox("Mode Selection", options=["Temporalization", "Calculation"])
