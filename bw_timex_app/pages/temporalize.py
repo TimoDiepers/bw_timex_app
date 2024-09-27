@@ -568,7 +568,7 @@ with tab_calc:
                         if st.button(
                             "Overwrite Temporal Information",
                             type="primary",
-                            key="overwrite_search",
+                            key="overwrite_calc",
                             use_container_width=True,
                         ):
                             add_temporal_information(st.session_state.selected_exchange)
