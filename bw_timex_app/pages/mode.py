@@ -6,7 +6,7 @@ st.set_page_config(
 )
 
 if "current_project" not in st.session_state:
-    st.switch_page("project_selection.py")
+    st.switch_page("pages/project_selection.py")
 
 _, col, _ = st.columns([1, 2, 1])
 with col:

@@ -23,7 +23,7 @@ st.markdown(
 )
 
 if "current_project" not in st.session_state:
-    st.switch_page("project_selection.py")
+    st.switch_page("pages/project_selection.py")
 
 bd.projects.set_current(st.session_state.current_project)
 
@@ -263,16 +263,15 @@ with st.container(border=True):
 
         def custom_convert_to_datetime(x):
             if x == "dynamic":
-                return x
-            else:
-                return datetime.strptime(x, "%Y-%m-%d")
+                return x  # Return as string
+            try:
+                return datetime.strptime(x, "%Y-%m-%d")  # Convert to datetime
+            except ValueError:
+                raise ValueError(f"Invalid date format or value: {x}")  # Raise error for invalid strings
+            
+        representative_dates = editor["Representative Date"].apply(custom_convert_to_datetime)
+        database_date_dict = {db_name: date for db_name, date in zip(editor["Database"], representative_dates)}
 
-        database_date_dict = dict(
-            zip(
-                editor["Database"],
-                editor["Representative Date"].apply(custom_convert_to_datetime),
-            )
-        )
         with st.status("Crunching the Numbers..."):
             st.write("Initializing TimexLCA")
             tlca = TimexLCA(
@@ -282,6 +281,7 @@ with st.container(border=True):
             )
             st.write("Building the Timeline")
             timeline = tlca.build_timeline()
+            timeline
             st.write("Calculating time-explicit LCI")
             tlca.lci()
             st.write("Done!")

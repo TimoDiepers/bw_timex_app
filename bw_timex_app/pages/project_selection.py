@@ -108,6 +108,7 @@ def add_timex_getting_started_project():
 def add_timex_ev_example_project():
     if "timex_ev_example" in bd.projects:
         bd.projects.delete_project("timex_ev_example", delete_dir=True)
+        bd.projects.purge_deleted_directories()
     bd.projects.set_current("timex_ev_example")
     biosphere = bd.Database("biosphere")
     biosphere.write(
@@ -315,10 +316,10 @@ def add_timex_ev_example_project():
 add_timex_getting_started_project()
 # if "timex_ev_example" not in bd.projects:
 add_timex_ev_example_project()
-
+    
 _, col, _ = st.columns([1, 2, 1])
 with col:
-    st.title("Select a Project")
+    st.subheader("Select a Project")
     st.text("")
     project_names = [
         project.name for project in bd.projects
