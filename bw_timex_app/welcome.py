@@ -4,14 +4,14 @@ st.set_page_config(
     page_title="bw_timex_app", layout="centered", initial_sidebar_state="collapsed"
 )
 
-st.markdown("""
-    <style>
-    a[href] {
-        text-decoration: underline;
-        color: #9c5ffd;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+# st.markdown("""
+#     <style>
+#     a[href] {
+#         text-decoration: underline;
+#         color: #9c5ffd;
+#     }
+#     </style>
+#     """, unsafe_allow_html=True)
 
 _, col_welcome, _ = st.columns([1, 5, 1])
 with col_welcome:
