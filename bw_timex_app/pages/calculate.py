@@ -112,11 +112,11 @@ def show_results():
 
         emission_id = bd.get_node(code="CO2").id
 
-        characterization_function_dict = {
+        characterization_functions = {
             emission_id: characterize_co2,
         }
     else:
-        characterization_function_dict = None
+        characterization_functions = None
 
     def plot_characterized_inventory(tlca, **kwargs):
         from bw_timex.utils import resolve_temporalized_node_name
@@ -138,7 +138,7 @@ def show_results():
         for activity in plot_data["activity"].unique():
             if activity not in activity_name_cache:
                 activity_name_cache[activity] = resolve_temporalized_node_name(
-                    tlca.activity_time_mapping_dict_reversed[activity][0][1]
+                    tlca.activity_time_mapping.reversed[activity][0][1]
                 )
         plot_data["activity_label"] = plot_data["activity"].map(activity_name_cache)
 
@@ -171,7 +171,7 @@ def show_results():
         metric="radiative_forcing",
         time_horizon=time_horizon_rf,
         fixed_time_horizon=fixed_th_rf,
-        characterization_function_dict=characterization_function_dict,
+        characterization_functions=characterization_functions,
     )
     plot_characterized_inventory(tlca)
 
@@ -186,7 +186,7 @@ def show_results():
         metric="GWP",
         time_horizon=time_horizon_gwp,
         fixed_time_horizon=fixed_th_gwp,
-        characterization_function_dict=characterization_function_dict,
+        characterization_functions=characterization_functions,
     )
 
     plot_characterized_inventory(tlca)
@@ -270,14 +270,14 @@ with st.container(border=True):
                 raise ValueError(f"Invalid date format or value: {x}")  # Raise error for invalid strings
             
         representative_dates = editor["Representative Date"].apply(custom_convert_to_datetime)
-        database_date_dict = {db_name: date for db_name, date in zip(editor["Database"], representative_dates)}
+        database_dates = {db_name: date for db_name, date in zip(editor["Database"], representative_dates)}
 
         with st.status("Crunching the Numbers..."):
             st.write("Initializing TimexLCA")
             tlca = TimexLCA(
                 demand={st.session_state.tlca_demand_activity: amount},
                 method=selected_method,
-                database_date_dict=database_date_dict,
+                database_dates=database_dates,
             )
             st.write("Building the Timeline")
             timeline = tlca.build_timeline()
