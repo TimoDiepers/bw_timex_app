@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import bw2data as bd
 from datetime import datetime
+from dateutil import parser
 from bw2data.backends import ActivityDataset as AD
 from bw2data.subclass_mapping import NODE_PROCESS_CLASS_MAPPING
 from bw_timex import TimexLCA
@@ -262,13 +263,13 @@ with st.container(border=True):
         from bw_timex import TimexLCA
 
         def custom_convert_to_datetime(x):
-            if x == "dynamic":
-                return x  # Return as string
+            if isinstance(x, str) and x.strip().lower() == "dynamic":
+                return "dynamic"
             try:
-                return datetime.strptime(x, "%Y-%m-%d")  # Convert to datetime
-            except ValueError:
-                raise ValueError(f"Invalid date format or value: {x}")  # Raise error for invalid strings
-            
+                return parser.parse(str(x), fuzzy=True)
+            except (ValueError, TypeError):
+                raise ValueError(f"Invalid date format or value: {x}")
+
         representative_dates = editor["Representative Date"].apply(custom_convert_to_datetime)
         database_dates = {db_name: date for db_name, date in zip(editor["Database"], representative_dates)}
 

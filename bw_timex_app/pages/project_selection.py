@@ -312,10 +312,10 @@ def add_timex_ev_example_project():
     )
 
 
-# if "timex_getting_started" not in bd.projects:
-add_timex_getting_started_project()
-# if "timex_ev_example" not in bd.projects:
-add_timex_ev_example_project()
+if "timex_getting_started" not in bd.projects:
+    add_timex_getting_started_project()
+if "timex_ev_example" not in bd.projects:
+    add_timex_ev_example_project()
     
 _, col, _ = st.columns([1, 2, 1])
 with col:

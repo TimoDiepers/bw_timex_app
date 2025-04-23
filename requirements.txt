@@ -1,3 +1,3 @@
-bw_timex==0.3
+bw_timex==0.3.1
 streamlit>=1.38.0
 plotly

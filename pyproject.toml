@@ -29,7 +29,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "bw_timex>=0.3.0",
+    "bw_timex>=0.3.1",
     "streamlit>=1.38.0",
     "plotly",
     # dependencies as strings with quotes, e.g. "foo"
